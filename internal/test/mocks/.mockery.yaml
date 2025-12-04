@@ -1,0 +1,33 @@
+all: false
+formatter: goimports
+log-level: info
+template: testify
+packages:
+  github.com/vo1dFl0w/auth-service/internal/app/repository:
+    interfaces:
+      AuthRepository:
+        config:
+          dir: "./internal/test/mocks"
+          pkgname: "mocks"
+          structname: "AuthRepositoryMock"
+          filename: "auth_repository_mock.go"
+      TokenRepository:
+        config:
+          dir: "./internal/test/mocks"
+          pkgname: "mocks"
+          structname: "TokenRepositoryMock"
+          filename: "token_repository_mock.go"
+  github.com/vo1dFl0w/auth-service/internal/app/usecase:
+    interfaces:
+      AuthService:
+        config:
+          dir: "./internal/test/mocks"
+          pkgname: "mocks"
+          structname: "AuthServiceMock"
+          filename: "auth_service_mock.go"
+      TokenService:
+        config:
+          dir: "./internal/test/mocks"
+          pkgname: "mocks"
+          structname: "TokenServiceMock"
+          filename: "token_service_mock.go"

@@ -1,0 +1,32 @@
+services:
+  application:
+    build: ./
+    container_name: application
+    ports:
+      - "8080:8080"
+    environment:
+      - CONFIG_PATH=/auth-service/configs/config.yaml
+    depends_on:
+      - database
+      - migrations
+  database:
+    container_name: database
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=auth-service-db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - db_data:/var/lib/postgres/data
+    restart: always
+  migrations:
+    image: migrate/migrate:latest
+    command: ["-path", "/migrations", "-database", "postgres://admin:admin@database:5432/auth-service-db?sslmode=disable", "up"]
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      - database
+volumes:
+  db_data:

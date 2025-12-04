@@ -1,0 +1,15 @@
+env: "local"
+
+http_addr: ":8080"
+
+db:
+  host: "database"
+  port: "5432"
+  username: "admin"
+  password: "admin"
+  dbname: "auth-service-db"
+  sslmode: "disable"
+
+jwt_secret: "very-secret-key"
+
+cookie_secure: false
