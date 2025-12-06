@@ -3,6 +3,7 @@ package http_test
 import (
 	"context"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -11,11 +12,27 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/vo1dFl0w/auth-service/internal/app/domain"
 	httpadapter "github.com/vo1dFl0w/auth-service/internal/app/transport/http"
+	"github.com/vo1dFl0w/auth-service/internal/config"
 	"github.com/vo1dFl0w/auth-service/internal/gen"
 	"github.com/vo1dFl0w/auth-service/internal/test/mocks"
 )
 
+var (
+	configPath       = "../../../../configs/config.yaml"
+	jwtSecret        = "jwt-secret-key-test"
+	postgresPassword = "password-test"
+)
+
 func TestHandlers_APIV1AuthLoginPost(t *testing.T) {
+	if err := setEnv(t); err != nil {
+		t.Fatalf("failed to set environments: %s", err)
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatalf("failed to load config: %s", err)
+	}
+
 	testCases := []struct {
 		name     string
 		email    string
@@ -47,7 +64,7 @@ func TestHandlers_APIV1AuthLoginPost(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			authService := &mocks.AuthServiceMock{}
 
-			handler := httpadapter.NewHandler(nil, authService, false)
+			handler := httpadapter.NewHandler(cfg, nil, authService)
 
 			if !tc.expErr {
 				tokens := &domain.Tokens{
@@ -98,9 +115,18 @@ func TestHandlers_APIV1AuthLoginPost(t *testing.T) {
 }
 
 func TestHandlers_APIV1AuthLogoutPost(t *testing.T) {
+	if err := setEnv(t); err != nil {
+		t.Fatalf("failed to set environments: %s", err)
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatal("failed to load config")
+	}
+
 	authService := &mocks.AuthServiceMock{}
 
-	handler := httpadapter.NewHandler(nil, authService, false)
+	handler := httpadapter.NewHandler(cfg, nil, authService)
 
 	refreshToken := "refresh-token"
 
@@ -119,9 +145,18 @@ func TestHandlers_APIV1AuthLogoutPost(t *testing.T) {
 }
 
 func TestHandlers_APIV1AuthMeGet(t *testing.T) {
+	if err := setEnv(t); err != nil {
+		t.Fatalf("failed to set environments: %s", err)
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatalf("failed to load config: %s", err)
+	}
+
 	authService := &mocks.AuthServiceMock{}
 
-	handler := httpadapter.NewHandler(nil, authService, false)
+	handler := httpadapter.NewHandler(cfg, nil, authService)
 
 	userID := uuid.New()
 	u := &domain.User{
@@ -149,9 +184,18 @@ func TestHandlers_APIV1AuthMeGet(t *testing.T) {
 }
 
 func TestHandlers_APIV1AuthRefreshPost(t *testing.T) {
+	if err := setEnv(t); err != nil {
+		t.Fatalf("failed to set environments: %s", err)
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatalf("failed to load config: %s", err)
+	}
+
 	authService := &mocks.AuthServiceMock{}
 
-	handler := httpadapter.NewHandler(nil, authService, false)
+	handler := httpadapter.NewHandler(cfg, nil, authService)
 
 	refreshToken := "refresh-token"
 	accessToken := "access-token"
@@ -190,6 +234,15 @@ func TestHandlers_APIV1AuthRefreshPost(t *testing.T) {
 }
 
 func TestHandlers_APIV1AuthRegisterPost(t *testing.T) {
+	if err := setEnv(t); err != nil {
+		t.Fatalf("failed to set environments: %s", err)
+	}
+
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		t.Fatalf("failed to load config: %s", err)
+	}
+
 	testCases := []struct {
 		name     string
 		email    string
@@ -220,7 +273,7 @@ func TestHandlers_APIV1AuthRegisterPost(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			authService := &mocks.AuthServiceMock{}
 
-			handler := httpadapter.NewHandler(nil, authService, false)
+			handler := httpadapter.NewHandler(cfg, nil, authService)
 
 			if !tc.expErr {
 				userID := uuid.New()
@@ -272,4 +325,22 @@ func TestHandlers_APIV1AuthRegisterPost(t *testing.T) {
 			}
 		})
 	}
+}
+
+func setEnv(t *testing.T) error {
+	t.Helper()
+
+	if err := os.Setenv("CONFIG_PATH", configPath); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("JWT_SECRET", jwtSecret); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("POSTGRES_PASSWORD", postgresPassword); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -9,8 +9,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rs/cors"
 	"github.com/vo1dFl0w/auth-service/internal/app/domain"
 	"github.com/vo1dFl0w/auth-service/internal/app/usecase"
+	"github.com/vo1dFl0w/auth-service/internal/config"
 	"github.com/vo1dFl0w/auth-service/internal/gen"
 )
 
@@ -19,16 +21,31 @@ var (
 )
 
 type Handler struct {
+	cfg          *config.Config
 	log          *slog.Logger
+	cors         *cors.Cors
 	authService  usecase.AuthService
 	cookieSecure bool
 }
 
-func NewHandler(log *slog.Logger, authService usecase.AuthService, cookieSecure bool) *Handler {
+func NewHandler(cfg *config.Config, log *slog.Logger, authService usecase.AuthService) *Handler {
+	opts := cors.Options{
+		AllowedOrigins:   cfg.Cors.AllowedOrigins,
+		AllowedMethods:   cfg.Cors.AllowedMethods,
+		AllowedHeaders:   cfg.Cors.AllowedHeaders,
+		ExposedHeaders:   cfg.Cors.ExposedHeaders,
+		AllowCredentials: cfg.Cors.AllowCredentials,
+		MaxAge:           cfg.Cors.MaxAge,
+	}
+
+	c := cors.New(opts)
+
 	return &Handler{
+		cfg:          cfg,
 		log:          log,
+		cors:         c,
 		authService:  authService,
-		cookieSecure: cookieSecure,
+		cookieSecure: cfg.Cookie.CookieSecure,
 	}
 }
 

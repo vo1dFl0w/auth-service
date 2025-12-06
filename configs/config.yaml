@@ -1,15 +1,33 @@
 env: "local"
 
-http_addr: ":8080"
+server:
+  host: "0.0.0.0"
+  port: ":8080"
 
-db:
+postgres:
   host: "database"
   port: "5432"
   username: "admin"
-  password: "admin"
+  password: ""
   dbname: "auth-service-db"
   sslmode: "disable"
 
-jwt_secret: "very-secret-key"
+cors:
+  allowed_origins: []
+  allow_credentials: true
+  allowed_methods:
+    - "GET"
+    - "POST"
+    - "DELETE"
+    - "OPTIONS"
+  allowed_headers:
+    - "Authorization"
+    - "Content-Type"
+    - "X-Requested-With"
+  exposed_headers: []
+  max_age: 600
 
-cookie_secure: false
+jwt_secret: ""
+
+cookie:
+  cookie_secure: false

@@ -40,7 +40,7 @@ func run(ctx context.Context) error {
 
 	databaseDSN := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.DB.Host, cfg.DB.Port, cfg.DB.Username, cfg.DB.Password, cfg.DB.DBname, cfg.DB.Sslmode,
+		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.Username, cfg.Postgres.Password, cfg.Postgres.DBname, cfg.Postgres.Sslmode,
 	)
 
 	db, err := sql.Open("postgres", databaseDSN)
@@ -57,7 +57,7 @@ func run(ctx context.Context) error {
 	tokenService := usecase.NewTokenService([]byte(cfg.JWTsecret), storage.Token())
 	authService := usecase.NewAuthService(storage.Auth(), storage.Token(), tokenService)
 
-	handler := httpadapter.NewHandler(logger, authService, cfg.CookieSecure)
+	handler := httpadapter.NewHandler(cfg, logger, authService)
 	secHandler := httpadapter.NewSecuredHandler(tokenService)
 
 	server, err := gen.NewServer(handler, secHandler)
@@ -67,8 +67,10 @@ func run(ctx context.Context) error {
 
 	middlewares := handler.LoggerMiddleware(handler.CorsMiddleware(server))
 
+	srvAddr := fmt.Sprintf("%s%s", cfg.Server.Host, cfg.Server.Port)
+
 	srv := http.Server{
-		Addr:    cfg.HttpAddr,
+		Addr:    srvAddr,
 		Handler: middlewares,
 	}
 
