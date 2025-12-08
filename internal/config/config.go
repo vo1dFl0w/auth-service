@@ -10,8 +10,9 @@ import (
 )
 
 type ServerConfig struct {
-	Host string `yaml:"host"`
-	Port string `yaml:"port"`
+	Host            string `yaml:"host"`
+	Port            string `yaml:"port"`
+	RequestDuration int    `yaml:"request_duration"`
 }
 
 type PostgresConfig struct {

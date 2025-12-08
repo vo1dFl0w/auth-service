@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -14,6 +15,15 @@ const (
 	CtxKeyUserID       ctxKey = "user_id"
 	CtxKeyRefreshToken ctxKey = "refresh_token"
 )
+
+func (h *Handler) TimeoutMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second * time.Duration(h.cfg.Server.RequestDuration))
+		defer cancel()
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
 
 func (h *Handler) CorsMiddleware(next http.Handler) http.Handler {
     return h.cors.Handler(next)

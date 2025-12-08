@@ -65,7 +65,7 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to generate new server: %w", err)
 	}
 
-	middlewares := handler.LoggerMiddleware(handler.CorsMiddleware(server))
+	middlewares := handler.TimeoutMiddleware(handler.LoggerMiddleware(handler.CorsMiddleware(server)))
 
 	srvAddr := fmt.Sprintf("%s%s", cfg.Server.Host, cfg.Server.Port)
 
