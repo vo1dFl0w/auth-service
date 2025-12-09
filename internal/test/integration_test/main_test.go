@@ -26,6 +26,7 @@ var (
 	postgresPort     = "5432/tcp"
 
 	migrationsSource = "file://../../../migrations"
+	envPath          = "../../../.env"
 )
 
 var (
@@ -34,7 +35,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	if err := godotenv.Load("../../../.env"); err != nil {
+	if err := godotenv.Load(envPath); err != nil {
 		fmt.Printf("env not found: %s", err)
 		os.Exit(1)
 	}
