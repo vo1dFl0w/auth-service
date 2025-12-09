@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/vo1dFl0w/auth-service/internal/app/domain"
 	"github.com/vo1dFl0w/auth-service/internal/app/repository"
@@ -18,7 +18,7 @@ type TokenService interface {
 	GenerateAccessToken(userID uuid.UUID) (string, error)
 	GenerateRefreshToken() (string, error)
 	HashRefreshToken(refreshToken string) (string, time.Time)
-	ValidateAccessToken(accessToken string) (*jwt.StandardClaims, error)
+	ValidateAccessToken(accessToken string) (*jwt.RegisteredClaims, error)
 }
 
 type tokenService struct {
@@ -34,10 +34,10 @@ func NewTokenService(jwtSecret []byte, tokenRepo repository.TokenRepository) Tok
 }
 
 func (s *tokenService) GenerateAccessToken(userID uuid.UUID) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		Subject:   userID.String(),
-		ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
-		IssuedAt:  time.Now().Unix(),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	})
 
 	return token.SignedString(s.jwtSecret)
@@ -54,15 +54,14 @@ func (s *tokenService) GenerateRefreshToken() (string, error) {
 	return fmt.Sprintf("%x", b), nil
 }
 
-func (s *tokenService) ValidateAccessToken(accessToken string) (*jwt.StandardClaims, error) {
-	claims := &jwt.StandardClaims{}
+func (s *tokenService) ValidateAccessToken(accessToken string) (*jwt.RegisteredClaims, error) {
+	claims := &jwt.RegisteredClaims{}
 
 	t, err := jwt.ParseWithClaims(accessToken, claims, func(t *jwt.Token) (interface{}, error) {
 		return s.jwtSecret, nil
 	})
 	if err != nil {
-		var e *jwt.ValidationError
-		if errors.As(err, &e) && e.Errors&jwt.ValidationErrorExpired != 0 {
+		if errors.Is(err, jwt.ErrTokenExpired){
 			return nil, domain.ErrExpiredAccessToken
 		} else {
 			return nil, domain.ErrInvalidAccessToken

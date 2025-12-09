@@ -7,7 +7,7 @@ package mocks
 import (
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -213,23 +213,23 @@ func (_c *TokenServiceMock_HashRefreshToken_Call) RunAndReturn(run func(refreshT
 }
 
 // ValidateAccessToken provides a mock function for the type TokenServiceMock
-func (_mock *TokenServiceMock) ValidateAccessToken(accessToken string) (*jwt.StandardClaims, error) {
+func (_mock *TokenServiceMock) ValidateAccessToken(accessToken string) (*jwt.RegisteredClaims, error) {
 	ret := _mock.Called(accessToken)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ValidateAccessToken")
 	}
 
-	var r0 *jwt.StandardClaims
+	var r0 *jwt.RegisteredClaims
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (*jwt.StandardClaims, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) (*jwt.RegisteredClaims, error)); ok {
 		return returnFunc(accessToken)
 	}
-	if returnFunc, ok := ret.Get(0).(func(string) *jwt.StandardClaims); ok {
+	if returnFunc, ok := ret.Get(0).(func(string) *jwt.RegisteredClaims); ok {
 		r0 = returnFunc(accessToken)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*jwt.StandardClaims)
+			r0 = ret.Get(0).(*jwt.RegisteredClaims)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
@@ -264,12 +264,12 @@ func (_c *TokenServiceMock_ValidateAccessToken_Call) Run(run func(accessToken st
 	return _c
 }
 
-func (_c *TokenServiceMock_ValidateAccessToken_Call) Return(standardClaims *jwt.StandardClaims, err error) *TokenServiceMock_ValidateAccessToken_Call {
-	_c.Call.Return(standardClaims, err)
+func (_c *TokenServiceMock_ValidateAccessToken_Call) Return(registeredClaims *jwt.RegisteredClaims, err error) *TokenServiceMock_ValidateAccessToken_Call {
+	_c.Call.Return(registeredClaims, err)
 	return _c
 }
 
-func (_c *TokenServiceMock_ValidateAccessToken_Call) RunAndReturn(run func(accessToken string) (*jwt.StandardClaims, error)) *TokenServiceMock_ValidateAccessToken_Call {
+func (_c *TokenServiceMock_ValidateAccessToken_Call) RunAndReturn(run func(accessToken string) (*jwt.RegisteredClaims, error)) *TokenServiceMock_ValidateAccessToken_Call {
 	_c.Call.Return(run)
 	return _c
 }

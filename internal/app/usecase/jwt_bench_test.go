@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 var jwtSecret = []byte("jwt-secret-key-test")
@@ -12,18 +12,18 @@ var jwtSecret = []byte("jwt-secret-key-test")
 func BenchmarkJWTSign(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 			Subject:   "userID",
-			ExpiresAt: time.Now().Add(time.Hour).Unix(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute*15)),
 		})
 		_, _ = token.SignedString(jwtSecret)
 	}
 }
 
 func BenchmarkJWTParse(b *testing.B) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		Subject:   "userID",
-		ExpiresAt: time.Now().Add(time.Hour).Unix(),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute*15)),
 	})
 
 	s, _ := token.SignedString(jwtSecret)
