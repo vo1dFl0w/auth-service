@@ -36,6 +36,10 @@ func HashPassword(password string) (string, error) {
 	return string(h), nil
 }
 
-func comparePasswords(password, hashedPassword string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) == nil
+func comparePasswords(password, hashedPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+		return fmt.Errorf("failed to compare hash and password: %w", err)
+	}
+
+	return nil
 }

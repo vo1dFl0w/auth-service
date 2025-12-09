@@ -92,7 +92,7 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 		}
 	}
 
-	if !comparePasswords(password, res.PasswordHash) {
+	if err := comparePasswords(password, res.PasswordHash); err != nil {
 		return nil, domain.ErrWrongEmailOrPassword
 	}
 

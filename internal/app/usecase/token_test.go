@@ -61,3 +61,10 @@ func TestTokenRepository_ValidateAccessToken(t *testing.T) {
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, domain.ErrInvalidAccessToken)
 }
+
+func TestTokenRepository_HashRefreshTokenFunc(t *testing.T) {
+	refreshToken := "refresh-token"
+
+	res := usecase.HashRefreshTokenFunc(refreshToken)
+	assert.NotEqual(t, "", res)
+}
