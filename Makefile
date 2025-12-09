@@ -19,3 +19,4 @@ install-tools:
 test:
 	go test ./internal/app/transport/http
 	go test ./internal/app/usecase
+	go test ./internal/test/integration_test
