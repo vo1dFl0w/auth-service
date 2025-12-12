@@ -99,6 +99,19 @@ func encodeAPIV1AuthLoginPostResponse(response APIV1AuthLoginPostRes, w http.Res
 
 		return nil
 
+	case *APIV1AuthLoginPostGatewayTimeout:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(504)
+		span.SetStatus(codes.Error, http.StatusText(504))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
@@ -170,6 +183,19 @@ func encodeAPIV1AuthLogoutPostResponse(response APIV1AuthLogoutPostRes, w http.R
 
 		return nil
 
+	case *APIV1AuthLogoutPostGatewayTimeout:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(504)
+		span.SetStatus(codes.Error, http.StatusText(504))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
@@ -207,6 +233,19 @@ func encodeAPIV1AuthMeGetResponse(response APIV1AuthMeGetRes, w http.ResponseWri
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *APIV1AuthMeGetGatewayTimeout:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(504)
+		span.SetStatus(codes.Error, http.StatusText(504))
 
 		e := new(jx.Encoder)
 		response.Encode(e)
@@ -294,6 +333,19 @@ func encodeAPIV1AuthRefreshPostResponse(response APIV1AuthRefreshPostRes, w http
 
 		return nil
 
+	case *APIV1AuthRefreshPostGatewayTimeout:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(504)
+		span.SetStatus(codes.Error, http.StatusText(504))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
@@ -357,6 +409,19 @@ func encodeAPIV1AuthRegisterPostResponse(response APIV1AuthRegisterPostRes, w ht
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *APIV1AuthRegisterPostGatewayTimeout:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(504)
+		span.SetStatus(codes.Error, http.StatusText(504))
 
 		e := new(jx.Encoder)
 		response.Encode(e)

@@ -62,6 +62,11 @@ func (h *Handler) APIV1AuthRegisterPost(ctx context.Context, req *gen.RegisterRe
 				Message: err.Error(),
 				Status:  http.StatusBadRequest,
 			}, nil
+		} else if errors.Is(err, domain.ErrGatewayTimeout) {
+			return &gen.APIV1AuthRegisterPostGatewayTimeout{
+				Message: ErrGatewayTimeout.Error(),
+				Status:  http.StatusGatewayTimeout,
+			}, nil
 		} else {
 			return &gen.APIV1AuthRegisterPostInternalServerError{
 				Message: ErrInternalError.Error(),
@@ -84,6 +89,11 @@ func (h *Handler) APIV1AuthLoginPost(ctx context.Context, req *gen.LoginRequest)
 			return &gen.APIV1AuthLoginPostUnauthorized{
 				Message: domain.ErrWrongEmailOrPassword.Error(),
 				Status:  http.StatusUnauthorized,
+			}, nil
+		} else if errors.Is(err, domain.ErrGatewayTimeout) {
+			return &gen.APIV1AuthLoginPostGatewayTimeout{
+				Message: ErrGatewayTimeout.Error(),
+				Status:  http.StatusGatewayTimeout,
 			}, nil
 		} else {
 			return &gen.APIV1AuthLoginPostInternalServerError{
@@ -121,6 +131,11 @@ func (h *Handler) APIV1AuthMeGet(ctx context.Context) (gen.APIV1AuthMeGetRes, er
 				Message: ErrAccessDenied.Error(),
 				Status:  http.StatusUnauthorized,
 			}, nil
+		} else if errors.Is(err, domain.ErrGatewayTimeout) {
+			return &gen.APIV1AuthMeGetGatewayTimeout{
+				Message: ErrGatewayTimeout.Error(),
+				Status:  http.StatusGatewayTimeout,
+			}, nil
 		} else {
 			return &gen.APIV1AuthMeGetInternalServerError{
 				Message: ErrInternalError.Error(),
@@ -151,6 +166,11 @@ func (h *Handler) APIV1AuthLogoutPost(ctx context.Context, params gen.APIV1AuthL
 				Message: ErrEmptyRefreshToken.Error(),
 				Status:  http.StatusUnauthorized,
 			}, nil
+		} else if errors.Is(err, domain.ErrGatewayTimeout) {
+			return &gen.APIV1AuthLogoutPostGatewayTimeout{
+				Message: ErrGatewayTimeout.Error(),
+				Status:  http.StatusGatewayTimeout,
+			}, nil
 		} else {
 			return &gen.APIV1AuthLogoutPostInternalServerError{
 				Message: ErrInternalError.Error(),
@@ -174,7 +194,7 @@ func (h *Handler) APIV1AuthRefreshPost(ctx context.Context, params gen.APIV1Auth
 			Status:  http.StatusUnauthorized,
 		}, nil
 	}
-
+	
 	t, err := h.authService.RefreshTokens(ctx, token)
 	if err != nil {
 		if errors.Is(err, domain.ErrEmptyRefreshToken) {
@@ -186,6 +206,11 @@ func (h *Handler) APIV1AuthRefreshPost(ctx context.Context, params gen.APIV1Auth
 			return &gen.APIV1AuthRefreshPostUnauthorized{
 				Message: ErrInvalidOrExpiredRefreshToken.Error(),
 				Status:  http.StatusUnauthorized,
+			}, nil
+		} else if errors.Is(err, domain.ErrGatewayTimeout) {
+			return &gen.APIV1AuthRefreshPostGatewayTimeout{
+				Message: ErrGatewayTimeout.Error(),
+				Status:  http.StatusGatewayTimeout,
 			}, nil
 		} else {
 			return &gen.APIV1AuthRefreshPostInternalServerError{

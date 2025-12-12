@@ -10,6 +10,10 @@ type APIV1AuthLoginPostBadRequest ErrorResponse
 
 func (*APIV1AuthLoginPostBadRequest) aPIV1AuthLoginPostRes() {}
 
+type APIV1AuthLoginPostGatewayTimeout ErrorResponse
+
+func (*APIV1AuthLoginPostGatewayTimeout) aPIV1AuthLoginPostRes() {}
+
 type APIV1AuthLoginPostInternalServerError ErrorResponse
 
 func (*APIV1AuthLoginPostInternalServerError) aPIV1AuthLoginPostRes() {}
@@ -25,6 +29,10 @@ func (*APIV1AuthLoginPostUnprocessableEntity) aPIV1AuthLoginPostRes() {}
 type APIV1AuthLogoutPostBadRequest ErrorResponse
 
 func (*APIV1AuthLogoutPostBadRequest) aPIV1AuthLogoutPostRes() {}
+
+type APIV1AuthLogoutPostGatewayTimeout ErrorResponse
+
+func (*APIV1AuthLogoutPostGatewayTimeout) aPIV1AuthLogoutPostRes() {}
 
 type APIV1AuthLogoutPostInternalServerError ErrorResponse
 
@@ -51,6 +59,10 @@ type APIV1AuthLogoutPostUnauthorized ErrorResponse
 
 func (*APIV1AuthLogoutPostUnauthorized) aPIV1AuthLogoutPostRes() {}
 
+type APIV1AuthMeGetGatewayTimeout ErrorResponse
+
+func (*APIV1AuthMeGetGatewayTimeout) aPIV1AuthMeGetRes() {}
+
 type APIV1AuthMeGetInternalServerError ErrorResponse
 
 func (*APIV1AuthMeGetInternalServerError) aPIV1AuthMeGetRes() {}
@@ -62,6 +74,10 @@ func (*APIV1AuthMeGetUnauthorized) aPIV1AuthMeGetRes() {}
 type APIV1AuthRefreshPostBadRequest ErrorResponse
 
 func (*APIV1AuthRefreshPostBadRequest) aPIV1AuthRefreshPostRes() {}
+
+type APIV1AuthRefreshPostGatewayTimeout ErrorResponse
+
+func (*APIV1AuthRefreshPostGatewayTimeout) aPIV1AuthRefreshPostRes() {}
 
 type APIV1AuthRefreshPostInternalServerError ErrorResponse
 
@@ -78,6 +94,10 @@ func (*APIV1AuthRegisterPostBadRequest) aPIV1AuthRegisterPostRes() {}
 type APIV1AuthRegisterPostConflict ErrorResponse
 
 func (*APIV1AuthRegisterPostConflict) aPIV1AuthRegisterPostRes() {}
+
+type APIV1AuthRegisterPostGatewayTimeout ErrorResponse
+
+func (*APIV1AuthRegisterPostGatewayTimeout) aPIV1AuthRegisterPostRes() {}
 
 type APIV1AuthRegisterPostInternalServerError ErrorResponse
 

@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -18,7 +17,7 @@ const (
 
 func (h *Handler) TimeoutMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), time.Second * time.Duration(h.cfg.Server.RequestDuration))
+		ctx, cancel := context.WithTimeout(r.Context(), time.Second*time.Duration(h.cfg.Server.RequestDuration))
 		defer cancel()
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -26,7 +25,7 @@ func (h *Handler) TimeoutMiddleware(next http.Handler) http.Handler {
 }
 
 func (h *Handler) CorsMiddleware(next http.Handler) http.Handler {
-    return h.cors.Handler(next)
+	return h.cors.Handler(next)
 }
 
 func (h *Handler) LoggerMiddleware(next http.Handler) http.Handler {
@@ -76,17 +75,4 @@ type responseWriter struct {
 func (rw *responseWriter) WriteHeader(statusCode int) {
 	rw.code = statusCode
 	rw.ResponseWriter.WriteHeader(statusCode)
-}
-
-func errorResponse(w http.ResponseWriter, r *http.Request, code int, err any) {
-	response(w, r, code, err)
-}
-
-func response(w http.ResponseWriter, r *http.Request, code int, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-
-	if data != nil {
-		json.NewEncoder(w).Encode(data)
-	}
 }

@@ -11,6 +11,7 @@ var (
 	ErrInvalidEmail                 = errors.New("invalid email")
 	ErrInvalidAccessToken           = errors.New("invalid access token")
 	ErrInvalidOrExpiredRefreshToken = errors.New("invalid or expired refresh token")
+	ErrGatewayTimeout               = errors.New("gateway timeout")
 	ErrNotFound                     = errors.New("not found")
 	ErrWrongEmailOrPassword         = errors.New("wrong email or password")
 	ErrWrongUserID                  = errors.New("wrong user id")

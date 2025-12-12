@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -31,12 +30,14 @@ func (r *PostgresAuthRepo) CreateUser(ctx context.Context, email string, passwor
 		PasswordHash: passwordHash,
 	})
 	if err != nil {
-		if errors.As(err, &pqErr) {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return nil, repository.ErrGatewayTimeout
+		} else if errors.As(err, &pqErr) {
 			if pqErr.Code == "23505" {
 				return nil, repository.ErrEmailAlreadyExists
-			} else {
-				return nil, err
 			}
+		} else {
+			return nil, err
 		}
 	}
 
@@ -51,10 +52,12 @@ func (r *PostgresAuthRepo) CreateUser(ctx context.Context, email string, passwor
 func (r *PostgresAuthRepo) GetUserInfo(ctx context.Context, user_id uuid.UUID) (*domain.User, error) {
 	u, err := r.queries.GetUserInfo(ctx, user_id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return nil, repository.ErrGatewayTimeout
+		} else if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.ErrNotFound
 		} else {
-			return nil, fmt.Errorf("failed to get user info: %w", err)
+			return nil, err
 		}
 	}
 
@@ -69,10 +72,12 @@ func (r *PostgresAuthRepo) GetUserInfo(ctx context.Context, user_id uuid.UUID) (
 func (r *PostgresAuthRepo) FindUserByEmail(ctx context.Context, email string) (*domain.UserWithPassword, error) {
 	u, err := r.queries.FindUserByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return nil, repository.ErrGatewayTimeout
+		} else if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.ErrNotFound
 		} else {
-			return nil, fmt.Errorf("failed to find user by email: %w", err)
+			return nil, err
 		}
 	}
 

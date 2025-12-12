@@ -56,11 +56,13 @@ func (s *authService) Register(ctx context.Context, email string, password strin
 	}
 
 	u.Password = ""
-
+	
 	res, err := s.authRepo.CreateUser(ctx, email, hashedPassword)
 	if err != nil {
 		if errors.Is(err, repository.ErrEmailAlreadyExists) {
 			return nil, domain.ErrEmailAlreadyExists
+		} else if errors.Is(err, repository.ErrGatewayTimeout) {
+			return nil, domain.ErrGatewayTimeout
 		} else {
 			return nil, fmt.Errorf("failed to create user: %w", err)
 		}
@@ -87,6 +89,8 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, domain.ErrWrongEmailOrPassword
+		} else if errors.Is(err, repository.ErrGatewayTimeout) {
+			return nil, domain.ErrGatewayTimeout
 		} else {
 			return nil, fmt.Errorf("find user by email: %w", err)
 		}
@@ -108,7 +112,11 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 
 	h, expiresAt := s.tokenService.HashRefreshToken(refreshToken)
 	if err := s.tokenRepo.SaveHashedRefreshToken(ctx, res.UserID, h, expiresAt); err != nil {
-		return nil, fmt.Errorf("save hashed refresh token: %w", err)
+		if errors.Is(err, repository.ErrGatewayTimeout) {
+			return nil, domain.ErrGatewayTimeout
+		} else {
+			return nil, fmt.Errorf("save hashed refresh token: %w", err)
+		}
 	}
 
 	return &domain.Tokens{
@@ -129,6 +137,8 @@ func (s *authService) Logout(ctx context.Context, token string) error {
 	if err != nil {
 		if errors.Is(err, repository.ErrNoRowDeleted) {
 			return nil
+		} else if errors.Is(err, repository.ErrGatewayTimeout) {
+			return domain.ErrGatewayTimeout
 		} else {
 			return fmt.Errorf("delete refresh token: %w", err)
 		}
@@ -142,8 +152,11 @@ func (s *authService) UserInfo(ctx context.Context, user_id uuid.UUID) (*domain.
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, domain.ErrWrongUserID
+		} else if errors.Is(err, repository.ErrGatewayTimeout) {
+			return nil, domain.ErrGatewayTimeout
+		} else {
+			return nil, fmt.Errorf("get user info: %w", err)
 		}
-		return nil, fmt.Errorf("get user info: %w", err)
 	}
 
 	return u, nil
@@ -159,6 +172,8 @@ func (s *authService) RefreshTokens(ctx context.Context, token string) (*domain.
 	if err != nil {
 		if errors.Is(err, repository.ErrNoRowDeleted) {
 			return nil, domain.ErrInvalidOrExpiredRefreshToken
+		} else if errors.Is(err, repository.ErrGatewayTimeout) {
+			return nil, domain.ErrGatewayTimeout
 		} else {
 			return nil, fmt.Errorf("delete refresh token: %w", err)
 		}
@@ -180,7 +195,11 @@ func (s *authService) RefreshTokens(ctx context.Context, token string) (*domain.
 	h, expiresAt := s.tokenService.HashRefreshToken(refreshToken)
 
 	if err := s.tokenRepo.SaveHashedRefreshToken(ctx, res.UserID, h, expiresAt); err != nil {
-		return nil, fmt.Errorf("save hashed refresh token: %w", err)
+		if errors.Is(err, repository.ErrGatewayTimeout) {
+			return nil, domain.ErrGatewayTimeout
+		} else {
+			return nil, fmt.Errorf("save hashed refresh token: %w", err)
+		}
 	}
 
 	return &domain.Tokens{

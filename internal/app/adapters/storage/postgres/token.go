@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,28 +25,34 @@ func NewPostgresTokenRepo(q *gen.Queries) *PostgresTokenRepo {
 func (r *PostgresTokenRepo) FindRefreshToken(ctx context.Context, tokenHash string) (*domain.RefreshToken, error) {
 	ref, err := r.queries.FindRefreshToken(ctx, tokenHash)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return nil, repository.ErrGatewayTimeout
+		} else if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.ErrNotFound
 		} else {
-			return nil, fmt.Errorf("failed to find refresh token: %w", err)
+			return nil, err
 		}
 	}
 
 	return &domain.RefreshToken{
-		UserID: ref.UserID,
+		UserID:       ref.UserID,
 		RefreshToken: ref.RefreshTokenHash,
-		ExpiresAt: ref.ExpiresAt,
+		ExpiresAt:    ref.ExpiresAt,
 	}, nil
 }
 
 func (r *PostgresTokenRepo) SaveHashedRefreshToken(ctx context.Context, userID uuid.UUID, tokenHash string, expiresAt time.Time) error {
 	_, err := r.queries.SaveHashedRefreshToken(ctx, gen.SaveHashedRefreshTokenParams{
-		UserID: userID,
+		UserID:           userID,
 		RefreshTokenHash: tokenHash,
-		ExpiresAt: expiresAt,
+		ExpiresAt:        expiresAt,
 	})
 	if err != nil {
-		return err
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return repository.ErrGatewayTimeout
+		} else {
+			return err
+		}
 	}
 
 	return nil
@@ -56,15 +61,18 @@ func (r *PostgresTokenRepo) SaveHashedRefreshToken(ctx context.Context, userID u
 func (r *PostgresTokenRepo) DeleteRefreshToken(ctx context.Context, tokenHash string) (*domain.RefreshToken, error) {
 	ref, err := r.queries.DeleteRefreshToken(ctx, tokenHash)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			return nil, repository.ErrGatewayTimeout
+		} else if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.ErrNoRowDeleted
+		} else {
+			return nil, err
 		}
-		return nil, err
 	}
-	
+
 	return &domain.RefreshToken{
-		UserID: ref.UserID,
+		UserID:       ref.UserID,
 		RefreshToken: ref.RefreshTokenHash,
-		ExpiresAt: ref.ExpiresAt,
+		ExpiresAt:    ref.ExpiresAt,
 	}, nil
 }
