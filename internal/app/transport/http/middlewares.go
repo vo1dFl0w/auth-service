@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 )
@@ -44,26 +43,23 @@ func (h *Handler) LoggerMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(rw, r)
 
-		var level slog.Level
-		switch {
-		case rw.code >= 500:
-			level = slog.LevelError
-		case rw.code >= 400:
-			level = slog.LevelWarn
-		default:
-			level = slog.LevelInfo
-		}
-
 		complited := time.Since(start)
 		complitedStr := fmt.Sprintf("%.3fms", float64(complited.Microseconds())/1000)
 
-		log.Info(
-			"completed",
-			slog.Any(slog.LevelKey, level),
-			slog.Int("code", rw.code),
-			slog.String("status-text", http.StatusText(rw.code)),
-			slog.String("time", complitedStr),
-		)
+		attrs := []any{
+			"code", rw.code,
+			"status-text", http.StatusText(rw.code),
+			"time", complitedStr,
+		}
+
+		switch {
+		case rw.code >= 500:
+			log.Error("completed", attrs...)
+		case rw.code >= 400:
+			log.Warn("completed", attrs...)
+		default:
+			log.Info("completed", attrs...)
+		}
 	})
 }
 

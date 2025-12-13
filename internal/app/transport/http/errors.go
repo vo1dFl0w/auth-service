@@ -27,51 +27,6 @@ func (e *HTTPError) Error() string {
 	return e.Message
 }
 
-func MapError(err error) *HTTPError {
-	switch {
-	case errors.Is(err, domain.ErrEmailAlreadyExists):
-		return &HTTPError{
-			Message: domain.ErrEmailAlreadyExists.Error(),
-			Status:  http.StatusConflict,
-		}
-	case errors.Is(err, domain.ErrInvalidEmail) || errors.Is(err, domain.ErrInvalidPassword):
-		return &HTTPError{
-			Message: err.Error(),
-			Status:  http.StatusBadRequest,
-		}
-	case errors.Is(err, domain.ErrWrongEmailOrPassword):
-		return &HTTPError{
-			Message: domain.ErrWrongEmailOrPassword.Error(),
-			Status:  http.StatusUnauthorized,
-		}
-	case errors.Is(err, domain.ErrGatewayTimeout):
-		return &HTTPError{
-			Message: ErrGatewayTimeout.Error(),
-			Status:  http.StatusGatewayTimeout,
-		}
-	case errors.Is(err, domain.ErrWrongUserID):
-		return &HTTPError{
-			Message: ErrAccessDenied.Error(),
-			Status:  http.StatusUnauthorized,
-		}
-	case errors.Is(err, domain.ErrEmptyRefreshToken):
-		return &HTTPError{
-			Message: ErrEmptyRefreshToken.Error(),
-			Status:  http.StatusUnauthorized,
-		}
-	case errors.Is(err, domain.ErrInvalidOrExpiredRefreshToken):
-		return &HTTPError{
-			Message: ErrInvalidOrExpiredRefreshToken.Error(),
-			Status:  http.StatusUnauthorized,
-		}
-	default:
-		return &HTTPError{
-			Message: ErrInternalError.Error(),
-			Status:  http.StatusInternalServerError,
-		}
-	}
-}
-
 func (e *HTTPError) ToRegisterErrResp() gen.APIV1AuthRegisterPostRes {
 	switch e.Status {
 	case http.StatusConflict:
@@ -173,6 +128,51 @@ func (e *HTTPError) ToRefreshErrResp() gen.APIV1AuthRefreshPostRes {
 		return &gen.APIV1AuthRefreshPostInternalServerError{
 			Message: e.Message,
 			Status:  e.Status,
+		}
+	}
+}
+
+func MapError(err error) *HTTPError {
+	switch {
+	case errors.Is(err, domain.ErrEmailAlreadyExists):
+		return &HTTPError{
+			Message: domain.ErrEmailAlreadyExists.Error(),
+			Status:  http.StatusConflict,
+		}
+	case errors.Is(err, domain.ErrInvalidEmail) || errors.Is(err, domain.ErrInvalidPassword):
+		return &HTTPError{
+			Message: err.Error(),
+			Status:  http.StatusBadRequest,
+		}
+	case errors.Is(err, domain.ErrWrongEmailOrPassword):
+		return &HTTPError{
+			Message: domain.ErrWrongEmailOrPassword.Error(),
+			Status:  http.StatusUnauthorized,
+		}
+	case errors.Is(err, domain.ErrGatewayTimeout):
+		return &HTTPError{
+			Message: ErrGatewayTimeout.Error(),
+			Status:  http.StatusGatewayTimeout,
+		}
+	case errors.Is(err, domain.ErrWrongUserID):
+		return &HTTPError{
+			Message: ErrAccessDenied.Error(),
+			Status:  http.StatusUnauthorized,
+		}
+	case errors.Is(err, domain.ErrEmptyRefreshToken):
+		return &HTTPError{
+			Message: ErrEmptyRefreshToken.Error(),
+			Status:  http.StatusUnauthorized,
+		}
+	case errors.Is(err, domain.ErrInvalidOrExpiredRefreshToken):
+		return &HTTPError{
+			Message: ErrInvalidOrExpiredRefreshToken.Error(),
+			Status:  http.StatusUnauthorized,
+		}
+	default:
+		return &HTTPError{
+			Message: ErrInternalError.Error(),
+			Status:  http.StatusInternalServerError,
 		}
 	}
 }
