@@ -4,44 +4,52 @@ import (
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/lmittmann/tint"
 )
 
 var (
 	envLocal = "local"
 	envDev   = "dev"
 	envProd  = "prod"
-)
 
-var (
 	logTimeFormat = "02/01/2006 15:04:05"
 )
 
 func LoadLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	opts := slog.HandlerOptions{
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			if v := a.Value.Any(); v != nil {
-				if a.Key == slog.TimeKey {
-					if t, ok := v.(time.Time); ok {
-						return slog.String(slog.TimeKey, t.Format(logTimeFormat))
-					}
-				}
-			}
-			return a
-		},
-	}
+	var handler slog.Handler
 
 	switch env {
 	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug, ReplaceAttr: opts.ReplaceAttr}))
+		handler = tint.NewHandler(os.Stdout, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: logTimeFormat,
+		})
+
 	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug, ReplaceAttr: opts.ReplaceAttr}))
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+			ReplaceAttr: setLoggerOptions,
+		})
+
 	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo, ReplaceAttr: opts.ReplaceAttr}))
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+			ReplaceAttr: setLoggerOptions,
+		})
+
 	default:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo, ReplaceAttr: opts.ReplaceAttr}))
+		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})
 	}
 
-	return log
+	return slog.New(handler)
+}
+
+func setLoggerOptions(groups []string, a slog.Attr) slog.Attr {
+	if a.Key == slog.TimeKey {
+		if t, ok := a.Value.Any().(time.Time); ok {
+			return slog.String(slog.TimeKey, t.Format(logTimeFormat))
+		}
+	}
+	return a
 }

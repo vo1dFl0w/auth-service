@@ -58,6 +58,10 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("read config: %w", err)
 	}
 
+	if v := os.Getenv("ENV"); v != "" {
+		cfg.Env = v
+	}
+
 	if v := os.Getenv("JWT_SECRET"); v != "" {
 		cfg.JWTsecret = v
 	}

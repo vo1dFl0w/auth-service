@@ -1,4 +1,4 @@
-env: "local"
+env: ""
 
 server:
   host: "0.0.0.0"
