@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,14 +9,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/cors"
-	"github.com/vo1dFl0w/auth-service/internal/app/domain"
 	"github.com/vo1dFl0w/auth-service/internal/app/usecase"
 	"github.com/vo1dFl0w/auth-service/internal/config"
 	"github.com/vo1dFl0w/auth-service/internal/gen"
-)
-
-var (
-	ctxDuration = time.Second * 5
 )
 
 type Handler struct {
@@ -52,27 +46,8 @@ func NewHandler(cfg *config.Config, log *slog.Logger, authService usecase.AuthSe
 func (h *Handler) APIV1AuthRegisterPost(ctx context.Context, req *gen.RegisterRequest) (gen.APIV1AuthRegisterPostRes, error) {
 	u, err := h.authService.Register(ctx, string(req.Email), req.Password)
 	if err != nil {
-		if errors.Is(err, domain.ErrEmailAlreadyExists) {
-			return &gen.APIV1AuthRegisterPostConflict{
-				Message: domain.ErrEmailAlreadyExists.Error(),
-				Status:  http.StatusConflict,
-			}, nil
-		} else if errors.Is(err, domain.ErrInvalidEmail) || errors.Is(err, domain.ErrInvalidPassword) {
-			return &gen.APIV1AuthRegisterPostBadRequest{
-				Message: err.Error(),
-				Status:  http.StatusBadRequest,
-			}, nil
-		} else if errors.Is(err, domain.ErrGatewayTimeout) {
-			return &gen.APIV1AuthRegisterPostGatewayTimeout{
-				Message: ErrGatewayTimeout.Error(),
-				Status:  http.StatusGatewayTimeout,
-			}, nil
-		} else {
-			return &gen.APIV1AuthRegisterPostInternalServerError{
-				Message: ErrInternalError.Error(),
-				Status:  http.StatusInternalServerError,
-			}, nil
-		}
+		errHttp := MapError(err)
+		return errHttp.ToRegisterErrResp(), nil
 	}
 
 	return &gen.RegisterResponse{
@@ -85,22 +60,8 @@ func (h *Handler) APIV1AuthRegisterPost(ctx context.Context, req *gen.RegisterRe
 func (h *Handler) APIV1AuthLoginPost(ctx context.Context, req *gen.LoginRequest) (gen.APIV1AuthLoginPostRes, error) {
 	tokens, err := h.authService.Login(ctx, string(req.Email), req.Password)
 	if err != nil {
-		if errors.Is(err, domain.ErrWrongEmailOrPassword) {
-			return &gen.APIV1AuthLoginPostUnauthorized{
-				Message: domain.ErrWrongEmailOrPassword.Error(),
-				Status:  http.StatusUnauthorized,
-			}, nil
-		} else if errors.Is(err, domain.ErrGatewayTimeout) {
-			return &gen.APIV1AuthLoginPostGatewayTimeout{
-				Message: ErrGatewayTimeout.Error(),
-				Status:  http.StatusGatewayTimeout,
-			}, nil
-		} else {
-			return &gen.APIV1AuthLoginPostInternalServerError{
-				Message: ErrInternalError.Error(),
-				Status:  http.StatusInternalServerError,
-			}, nil
-		}
+		errHttp := MapError(err)
+		return errHttp.ToLoginErrResp(), nil
 	}
 
 	cookie := h.formCookieString(tokens.RefreshToken, tokens.RefreshTokenExpiresAt)
@@ -118,30 +79,14 @@ func (h *Handler) APIV1AuthLoginPost(ctx context.Context, req *gen.LoginRequest)
 func (h *Handler) APIV1AuthMeGet(ctx context.Context) (gen.APIV1AuthMeGetRes, error) {
 	id, err := getUserID(ctx)
 	if err != nil {
-		return &gen.APIV1AuthMeGetUnauthorized{
-			Message: ErrAccessDenied.Error(),
-			Status:  http.StatusUnauthorized,
-		}, nil
+		errHttp := MapError(err)
+		return errHttp.ToMeErrResp(), nil
 	}
 
 	u, err := h.authService.UserInfo(ctx, id)
 	if err != nil {
-		if errors.Is(err, domain.ErrWrongUserID) {
-			return &gen.APIV1AuthMeGetUnauthorized{
-				Message: ErrAccessDenied.Error(),
-				Status:  http.StatusUnauthorized,
-			}, nil
-		} else if errors.Is(err, domain.ErrGatewayTimeout) {
-			return &gen.APIV1AuthMeGetGatewayTimeout{
-				Message: ErrGatewayTimeout.Error(),
-				Status:  http.StatusGatewayTimeout,
-			}, nil
-		} else {
-			return &gen.APIV1AuthMeGetInternalServerError{
-				Message: ErrInternalError.Error(),
-				Status:  http.StatusInternalServerError,
-			}, nil
-		}
+		errHttp := MapError(err)
+		return errHttp.ToMeErrResp(), nil
 	}
 
 	return &gen.UserInfoResponse{
@@ -154,29 +99,13 @@ func (h *Handler) APIV1AuthMeGet(ctx context.Context) (gen.APIV1AuthMeGetRes, er
 func (h *Handler) APIV1AuthLogoutPost(ctx context.Context, params gen.APIV1AuthLogoutPostParams) (gen.APIV1AuthLogoutPostRes, error) {
 	token := params.RefreshToken
 	if token == "" {
-		return &gen.APIV1AuthLogoutPostUnauthorized{
-			Message: ErrEmptyRefreshToken.Error(),
-			Status:  http.StatusUnauthorized,
-		}, nil
+		errHttp := MapError(ErrEmptyRefreshToken)
+		return errHttp.ToLogoutErrResp(), nil
 	}
 
 	if err := h.authService.Logout(ctx, token); err != nil {
-		if errors.Is(err, domain.ErrEmptyRefreshToken) {
-			return &gen.APIV1AuthLogoutPostUnauthorized{
-				Message: ErrEmptyRefreshToken.Error(),
-				Status:  http.StatusUnauthorized,
-			}, nil
-		} else if errors.Is(err, domain.ErrGatewayTimeout) {
-			return &gen.APIV1AuthLogoutPostGatewayTimeout{
-				Message: ErrGatewayTimeout.Error(),
-				Status:  http.StatusGatewayTimeout,
-			}, nil
-		} else {
-			return &gen.APIV1AuthLogoutPostInternalServerError{
-				Message: ErrInternalError.Error(),
-				Status:  http.StatusInternalServerError,
-			}, nil
-		}
+		errHttp := MapError(err)
+		return errHttp.ToLogoutErrResp(), nil
 	}
 
 	clearCookie := h.clearRefreshTokenCookie()
@@ -189,35 +118,14 @@ func (h *Handler) APIV1AuthLogoutPost(ctx context.Context, params gen.APIV1AuthL
 func (h *Handler) APIV1AuthRefreshPost(ctx context.Context, params gen.APIV1AuthRefreshPostParams) (gen.APIV1AuthRefreshPostRes, error) {
 	token := params.RefreshToken
 	if token == "" {
-		return &gen.APIV1AuthRefreshPostUnauthorized{
-			Message: ErrEmptyRefreshToken.Error(),
-			Status:  http.StatusUnauthorized,
-		}, nil
+		errHttp := MapError(ErrEmptyRefreshToken)
+		return errHttp.ToRefreshErrResp(), nil
 	}
-	
+
 	t, err := h.authService.RefreshTokens(ctx, token)
 	if err != nil {
-		if errors.Is(err, domain.ErrEmptyRefreshToken) {
-			return &gen.APIV1AuthRefreshPostUnauthorized{
-				Message: ErrEmptyRefreshToken.Error(),
-				Status:  http.StatusUnauthorized,
-			}, nil
-		} else if errors.Is(err, domain.ErrInvalidOrExpiredRefreshToken) {
-			return &gen.APIV1AuthRefreshPostUnauthorized{
-				Message: ErrInvalidOrExpiredRefreshToken.Error(),
-				Status:  http.StatusUnauthorized,
-			}, nil
-		} else if errors.Is(err, domain.ErrGatewayTimeout) {
-			return &gen.APIV1AuthRefreshPostGatewayTimeout{
-				Message: ErrGatewayTimeout.Error(),
-				Status:  http.StatusGatewayTimeout,
-			}, nil
-		} else {
-			return &gen.APIV1AuthRefreshPostInternalServerError{
-				Message: ErrInternalError.Error(),
-				Status:  http.StatusInternalServerError,
-			}, nil
-		}
+		errHttp := MapError(err)
+		return errHttp.ToRefreshErrResp(), nil
 	}
 
 	cookie := h.formCookieString(t.RefreshToken, t.RefreshTokenExpiresAt)
