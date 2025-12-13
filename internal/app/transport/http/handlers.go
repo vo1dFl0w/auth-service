@@ -47,7 +47,7 @@ func (h *Handler) APIV1AuthRegisterPost(ctx context.Context, req *gen.RegisterRe
 	u, err := h.authService.Register(ctx, string(req.Email), req.Password)
 	if err != nil {
 		errHttp := MapError(err)
-		h.LogHTTPError(err, errHttp)
+		h.LogHTTPError(ctx, err, errHttp)
 		return errHttp.ToRegisterErrResp(), nil
 	}
 
@@ -62,7 +62,7 @@ func (h *Handler) APIV1AuthLoginPost(ctx context.Context, req *gen.LoginRequest)
 	tokens, err := h.authService.Login(ctx, string(req.Email), req.Password)
 	if err != nil {
 		errHttp := MapError(err)
-		h.LogHTTPError(err, errHttp)
+		h.LogHTTPError(ctx, err, errHttp)
 		return errHttp.ToLoginErrResp(), nil
 	}
 
@@ -82,14 +82,14 @@ func (h *Handler) APIV1AuthMeGet(ctx context.Context) (gen.APIV1AuthMeGetRes, er
 	id, err := getUserID(ctx)
 	if err != nil {
 		errHttp := MapError(err)
-		h.LogHTTPError(err, errHttp)
+		h.LogHTTPError(ctx, err, errHttp)
 		return errHttp.ToMeErrResp(), nil
 	}
 
 	u, err := h.authService.UserInfo(ctx, id)
 	if err != nil {
 		errHttp := MapError(err)
-		h.LogHTTPError(err, errHttp)
+		h.LogHTTPError(ctx, err, errHttp)
 		return errHttp.ToMeErrResp(), nil
 	}
 
@@ -104,13 +104,13 @@ func (h *Handler) APIV1AuthLogoutPost(ctx context.Context, params gen.APIV1AuthL
 	token := params.RefreshToken
 	if token == "" {
 		errHttp := MapError(ErrEmptyRefreshToken)
-		h.LogHTTPError(ErrEmptyRefreshToken, errHttp)
+		h.LogHTTPError(ctx, ErrEmptyRefreshToken, errHttp)
 		return errHttp.ToLogoutErrResp(), nil
 	}
-
+	
 	if err := h.authService.Logout(ctx, token); err != nil {
 		errHttp := MapError(err)
-		h.LogHTTPError(err, errHttp)
+		h.LogHTTPError(ctx, err, errHttp)
 		return errHttp.ToLogoutErrResp(), nil
 	}
 
@@ -125,14 +125,14 @@ func (h *Handler) APIV1AuthRefreshPost(ctx context.Context, params gen.APIV1Auth
 	token := params.RefreshToken
 	if token == "" {
 		errHttp := MapError(ErrEmptyRefreshToken)
-		h.LogHTTPError(ErrEmptyRefreshToken, errHttp)
+		h.LogHTTPError(ctx, ErrEmptyRefreshToken, errHttp)
 		return errHttp.ToRefreshErrResp(), nil
 	}
 
 	t, err := h.authService.RefreshTokens(ctx, token)
 	if err != nil {
 		errHttp := MapError(err)
-		h.LogHTTPError(err, errHttp)
+		h.LogHTTPError(ctx, err, errHttp)
 		return errHttp.ToRefreshErrResp(), nil
 	}
 
@@ -191,9 +191,10 @@ func getUserID(ctx context.Context) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (h *Handler) LogHTTPError(err error, httpErr *HTTPError) {
+func (h *Handler) LogHTTPError(ctx context.Context, err error, httpErr *HTTPError) {
 	attrs := []any{
-		"error", err.Error(),
+		"request_id", ctx.Value(CtxKeyRequestID),
+		"error", err,
 		"status", httpErr.Status,
 		"message", httpErr.Message,
 	}

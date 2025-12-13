@@ -94,6 +94,22 @@ func LoadConfig() (*Config, error) {
 		}
 	}
 
+	if v := os.Getenv("CORS_ALLOWED_HEADERS"); v != "" {
+		parts := strings.Split(v, ",")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		cfg.Cors.AllowedHeaders = parts
+	}
+
+	if v := os.Getenv("CORS_ALLOWED_METHODS"); v != "" {
+		parts := strings.Split(v, ",")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
+		}
+		cfg.Cors.AllowedMethods = parts
+	}
+
 	if v := os.Getenv("CORS_ALLOWED_ORIGINS"); v != "" {
 		parts := strings.Split(v, ",")
 		for i := range parts {
