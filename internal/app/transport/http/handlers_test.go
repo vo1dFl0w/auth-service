@@ -14,6 +14,7 @@ import (
 	httpadapter "github.com/vo1dFl0w/auth-service/internal/app/transport/http"
 	"github.com/vo1dFl0w/auth-service/internal/config"
 	"github.com/vo1dFl0w/auth-service/internal/gen"
+	"github.com/vo1dFl0w/auth-service/internal/pkg/logger"
 	"github.com/vo1dFl0w/auth-service/internal/test/mocks"
 )
 
@@ -32,6 +33,8 @@ func TestHandlers_APIV1AuthLoginPost(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to load config: %s", err)
 	}
+
+	log := logger.LoadLogger(cfg.Env)
 
 	testCases := []struct {
 		name     string
@@ -60,11 +63,10 @@ func TestHandlers_APIV1AuthLoginPost(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			authService := &mocks.AuthServiceMock{}
 
-			handler := httpadapter.NewHandler(cfg, nil, authService)
+			handler := httpadapter.NewHandler(cfg, log, authService)
 
 			if !tc.expErr {
 				tokens := &domain.Tokens{
@@ -124,9 +126,11 @@ func TestHandlers_APIV1AuthLogoutPost(t *testing.T) {
 		t.Fatal("failed to load config")
 	}
 
+	log := logger.LoadLogger(cfg.Env)
+
 	authService := &mocks.AuthServiceMock{}
 
-	handler := httpadapter.NewHandler(cfg, nil, authService)
+	handler := httpadapter.NewHandler(cfg, log, authService)
 
 	refreshToken := "refresh-token"
 
@@ -154,9 +158,11 @@ func TestHandlers_APIV1AuthMeGet(t *testing.T) {
 		t.Fatalf("failed to load config: %s", err)
 	}
 
+	log := logger.LoadLogger(cfg.Env)
+
 	authService := &mocks.AuthServiceMock{}
 
-	handler := httpadapter.NewHandler(cfg, nil, authService)
+	handler := httpadapter.NewHandler(cfg, log, authService)
 
 	userID := uuid.New()
 	u := &domain.User{
@@ -193,9 +199,11 @@ func TestHandlers_APIV1AuthRefreshPost(t *testing.T) {
 		t.Fatalf("failed to load config: %s", err)
 	}
 
+	log := logger.LoadLogger(cfg.Env)
+
 	authService := &mocks.AuthServiceMock{}
 
-	handler := httpadapter.NewHandler(cfg, nil, authService)
+	handler := httpadapter.NewHandler(cfg, log, authService)
 
 	refreshToken := "refresh-token"
 	accessToken := "access-token"
@@ -243,6 +251,8 @@ func TestHandlers_APIV1AuthRegisterPost(t *testing.T) {
 		t.Fatalf("failed to load config: %s", err)
 	}
 
+	log := logger.LoadLogger(cfg.Env)
+
 	testCases := []struct {
 		name     string
 		email    string
@@ -273,7 +283,7 @@ func TestHandlers_APIV1AuthRegisterPost(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			authService := &mocks.AuthServiceMock{}
 
-			handler := httpadapter.NewHandler(cfg, nil, authService)
+			handler := httpadapter.NewHandler(cfg, log, authService)
 
 			if !tc.expErr {
 				userID := uuid.New()
