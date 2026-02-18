@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vo1dFl0w/auth-service/internal/gen"
+	"github.com/vo1dFl0w/auth-service/internal/adapters/storage/postgres/pggen"
 )
 
 func TestFindRefreshToken(t *testing.T) {
@@ -18,7 +18,7 @@ func TestFindRefreshToken(t *testing.T) {
 	assert.NoError(t, err)
 	defer tx.Rollback()
 
-	q := gen.New(tx)
+	q := pggen.New(tx)
 
 	email := "user@example.org"
 	passwordHash := "password-hash"
@@ -48,7 +48,7 @@ func TestSaveHashedRefreshToken(t *testing.T) {
 	assert.NoError(t, err)
 	defer tx.Rollback()
 
-	q := gen.New(tx)
+	q := pggen.New(tx)
 
 	email := "user@example.org"
 	passwordHash := "password-hash"
@@ -56,7 +56,7 @@ func TestSaveHashedRefreshToken(t *testing.T) {
 	u := createUserHelper(t, q, email, passwordHash)
 
 	hash := "refresh-token-hash"
-	h, err := q.SaveHashedRefreshToken(ctx, gen.SaveHashedRefreshTokenParams{
+	h, err := q.SaveHashedRefreshToken(ctx, pggen.SaveHashedRefreshTokenParams{
 		UserID:           u.UserID,
 		RefreshTokenHash: hash,
 		ExpiresAt:        time.Now().UTC().Add(time.Hour * 24 * 7),
@@ -73,7 +73,7 @@ func TestDeleteRefreshToken(t *testing.T) {
 	assert.NoError(t, err)
 	defer tx.Rollback()
 
-	q := gen.New(tx)
+	q := pggen.New(tx)
 
 	email := "user@example.org"
 	passwordHash := "password-hash"

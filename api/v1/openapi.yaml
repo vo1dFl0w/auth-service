@@ -109,6 +109,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/google/login:
+    get:
+      summary: "Start Google OAuth2 login (redirect to Google)"
+      operationId: AuthGoogleLogin
+      tags:
+        - oauth
+      responses:
+        '302':
+          description: Redirect to Google Authorization URL
+          headers:
+            Set-Cookie:
+              description: "Set state cookie"
+              schema:
+                type: string
+            Location:
+              description: "URL to redirect user agent to (Google)"
+              schema:
+                type: string
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '504':
+          description: "Gateway Timeout"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/auth/google/callback:
+    get:
+      summary: "OAuth2 callback from Google"
+      operationId: AuthGoogleCallback
+      tags:
+        - oauth
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+          required: true
+        - name: state
+          in: query
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: "Successful authentication"
+          headers:
+            Set-Cookie:
+              description: "Refresh token cookie"
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessToken'
+        '400':
+          description: "Bad Request (invalid state / missing parameters)"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '504':
+          description: "Gateway Timeout"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/v1/auth/me:
     get:
       summary: "Secured method to get information about user"

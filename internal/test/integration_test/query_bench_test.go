@@ -2,10 +2,11 @@ package integrationtest
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"testing"
 
-	db "github.com/vo1dFl0w/auth-service/internal/gen"
+	pggen "github.com/vo1dFl0w/auth-service/internal/adapters/storage/postgres/pggen"
 )
 
 func BenchmarkFindUserByEmail(b *testing.B) {
@@ -15,8 +16,8 @@ func BenchmarkFindUserByEmail(b *testing.B) {
     ctx := context.Background()
 
     email := "user@example.com"
-    q := db.New(TestDB)
-    _, _ = q.CreateUser(ctx, db.CreateUserParams{Email: email, PasswordHash: "hash"})
+    q := pggen.New(TestDB)
+    _, _ = q.CreateUser(ctx, pggen.CreateUserParams{Email: email, PasswordHash: sql.NullString{String: "hash", Valid: "hash" != ""},})
     b.ReportAllocs()
     b.ResetTimer()
 

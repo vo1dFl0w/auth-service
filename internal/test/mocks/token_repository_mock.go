@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
-	"github.com/vo1dFl0w/auth-service/internal/app/domain"
+	"github.com/vo1dFl0w/auth-service/internal/domain"
 )
 
 // NewTokenRepositoryMock creates a new instance of TokenRepositoryMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "db/queries"
+    schema: "db/schemas"
+    gen:
+      go:
+        package: "pggen"
+        out: "internal/adapters/storage/postgres/pggen"
+        sql_package: "database/sql"
+

@@ -1,13 +1,13 @@
 .PHONY: genall ogen sqlc install-tools testunit testbench testintegration testall 
 
 ogen:
-	ogen --target ./internal/gen --package gen --clean ./api/v1/openapi.yaml
+	ogen --target ./internal/transport/http/httpgen --package httpgen --clean ./api/v1/openapi.yaml
 
 sqlc:
-	sqlc generate -f db/sqlc.yaml
+	sqlc generate
 
 mocks:
-	mockery --config ./internal/test/mocks/.mockery.yaml --log-level=debug
+	mockery --log-level=debug
 
 genall: ogen sqlc mocks
 
@@ -17,17 +17,17 @@ install-tools:
 	go install github.com/vektra/mockery/v3@v3.6.1
 
 testunit:
-	go test ./internal/app/transport/http
-	go test ./internal/app/usecase
+	go test ./internal/transport/http
+	go test ./internal/usecase
 
 testbench:
-	go test ./internal/app/usecase -bench=BenchmarkBcryptCost4
-	go test ./internal/app/usecase -bench=BenchmarkBcryptCost10
-	go test ./internal/app/usecase -bench=BenchmarkBcryptCost12
-	go test ./internal/app/usecase -bench=BenchmarkJWTSign
-	go test ./internal/app/usecase -bench=BenchmarkJWTParse
-	go test ./internal/app/usecase -bench=BenchmarkHashRefreshToken32
-	go test ./internal/app/usecase -bench=BenchmarkHashRefreshToken64
+	go test ./internal/usecase -bench=BenchmarkBcryptCost4
+	go test ./internal/usecase -bench=BenchmarkBcryptCost10
+	go test ./internal/usecase -bench=BenchmarkBcryptCost12
+	go test ./internal/usecase -bench=BenchmarkJWTSign
+	go test ./internal/usecase -bench=BenchmarkJWTParse
+	go test ./internal/usecase -bench=BenchmarkHashRefreshToken32
+	go test ./internal/usecase -bench=BenchmarkHashRefreshToken64
 
 testintegration:
 	go test ./internal/test/integration_test

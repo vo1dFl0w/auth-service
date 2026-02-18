@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
-	"github.com/vo1dFl0w/auth-service/internal/app/domain"
+	"github.com/vo1dFl0w/auth-service/internal/domain"
 )
 
 // NewAuthServiceMock creates a new instance of AuthServiceMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -109,6 +109,86 @@ func (_c *AuthServiceMock_Login_Call) Return(tokens *domain.Tokens, err error) *
 }
 
 func (_c *AuthServiceMock_Login_Call) RunAndReturn(run func(ctx context.Context, email string, password string) (*domain.Tokens, error)) *AuthServiceMock_Login_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LoginWithOAuthProvider provides a mock function for the type AuthServiceMock
+func (_mock *AuthServiceMock) LoginWithOAuthProvider(ctx context.Context, email string, providerID string, oauthProvider string) (*domain.Tokens, error) {
+	ret := _mock.Called(ctx, email, providerID, oauthProvider)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LoginWithOAuthProvider")
+	}
+
+	var r0 *domain.Tokens
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) (*domain.Tokens, error)); ok {
+		return returnFunc(ctx, email, providerID, oauthProvider)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) *domain.Tokens); ok {
+		r0 = returnFunc(ctx, email, providerID, oauthProvider)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*domain.Tokens)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = returnFunc(ctx, email, providerID, oauthProvider)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// AuthServiceMock_LoginWithOAuthProvider_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LoginWithOAuthProvider'
+type AuthServiceMock_LoginWithOAuthProvider_Call struct {
+	*mock.Call
+}
+
+// LoginWithOAuthProvider is a helper method to define mock.On call
+//   - ctx context.Context
+//   - email string
+//   - providerID string
+//   - oauthProvider string
+func (_e *AuthServiceMock_Expecter) LoginWithOAuthProvider(ctx interface{}, email interface{}, providerID interface{}, oauthProvider interface{}) *AuthServiceMock_LoginWithOAuthProvider_Call {
+	return &AuthServiceMock_LoginWithOAuthProvider_Call{Call: _e.mock.On("LoginWithOAuthProvider", ctx, email, providerID, oauthProvider)}
+}
+
+func (_c *AuthServiceMock_LoginWithOAuthProvider_Call) Run(run func(ctx context.Context, email string, providerID string, oauthProvider string)) *AuthServiceMock_LoginWithOAuthProvider_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *AuthServiceMock_LoginWithOAuthProvider_Call) Return(tokens *domain.Tokens, err error) *AuthServiceMock_LoginWithOAuthProvider_Call {
+	_c.Call.Return(tokens, err)
+	return _c
+}
+
+func (_c *AuthServiceMock_LoginWithOAuthProvider_Call) RunAndReturn(run func(ctx context.Context, email string, providerID string, oauthProvider string) (*domain.Tokens, error)) *AuthServiceMock_LoginWithOAuthProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }

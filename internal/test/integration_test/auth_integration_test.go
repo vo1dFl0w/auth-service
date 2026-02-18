@@ -2,11 +2,12 @@ package integrationtest
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vo1dFl0w/auth-service/internal/gen"
+	pggen "github.com/vo1dFl0w/auth-service/internal/adapters/storage/postgres/pggen"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -19,11 +20,11 @@ func TestCreateUser(t *testing.T) {
 
 	email := "user@example.org"
 	passwordHash := "refresh-token-hash"
-
-	q := gen.New(tx)
-	res, err := q.CreateUser(ctx, gen.CreateUserParams{
+	
+	q := pggen.New(tx)
+	res, err := q.CreateUser(ctx, pggen.CreateUserParams{
 		Email:        email,
-		PasswordHash: passwordHash,
+		PasswordHash: sql.NullString{String: passwordHash, Valid: passwordHash != ""},
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
@@ -33,7 +34,7 @@ func TestCreateUser(t *testing.T) {
 	assert.NotNil(t, u)
 	assert.Equal(t, res.UserID, u.UserID)
 	assert.Equal(t, res.Email, u.Email)
-	assert.Equal(t, passwordHash, u.PasswordHash)
+	assert.Equal(t, passwordHash, u.PasswordHash.String)
 	assert.Equal(t, res.CreatedAt, u.CreatedAt)
 	assert.Equal(t, res.IsActive, u.IsActive)
 }
@@ -46,7 +47,7 @@ func TestGetUserInfo(t *testing.T) {
 	assert.NoError(t, err)
 	defer tx.Rollback()
 
-	q := gen.New(tx)
+	q := pggen.New(tx)
 
 	email := "user@example.org"
 	passwordHash := "refresh-token-hash"
@@ -70,7 +71,7 @@ func TestFindUserByEmail(t *testing.T) {
 	assert.NoError(t, err)
 	defer tx.Rollback()
 
-	q := gen.New(tx)
+	q := pggen.New(tx)
 
 	email := "user@example.org"
 	passwordHash := "refresh-token-hash"
@@ -82,7 +83,7 @@ func TestFindUserByEmail(t *testing.T) {
 	assert.NotNil(t, u)
 	assert.Equal(t, u.UserID, res.UserID)
 	assert.Equal(t, u.Email, res.Email)
-	assert.Equal(t, passwordHash, res.PasswordHash)
+	assert.Equal(t, passwordHash, res.PasswordHash.String)
 	assert.Equal(t, u.CreatedAt, res.CreatedAt)
 	assert.Equal(t, u.IsActive, res.IsActive)
 }

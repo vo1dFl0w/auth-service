@@ -12,12 +12,13 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/vo1dFl0w/auth-service/internal/app/adapters/storage/postgres"
-	httpadapter "github.com/vo1dFl0w/auth-service/internal/app/transport/http"
-	"github.com/vo1dFl0w/auth-service/internal/app/usecase"
+	"github.com/vo1dFl0w/auth-service/internal/adapters/oauth/google"
+	"github.com/vo1dFl0w/auth-service/internal/adapters/storage/postgres"
 	"github.com/vo1dFl0w/auth-service/internal/config"
-	"github.com/vo1dFl0w/auth-service/internal/gen"
-	"github.com/vo1dFl0w/auth-service/internal/pkg/logger"
+	ht "github.com/vo1dFl0w/auth-service/internal/transport/http"
+	"github.com/vo1dFl0w/auth-service/internal/transport/http/httpgen"
+	"github.com/vo1dFl0w/auth-service/internal/usecase"
+	"github.com/vo1dFl0w/auth-service/pkg/logger"
 )
 
 func main() {
@@ -36,7 +37,8 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	logger := logger.LoadLogger(cfg.Env)
+	loggerCfg := logger.NewLoggerConfig(cfg.Server.Env, cfg.Server.LoggerTimeFormat)
+	logger := logger.LoadLogger(loggerCfg)
 
 	databaseDSN := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
@@ -57,10 +59,13 @@ func run(ctx context.Context) error {
 	tokenService := usecase.NewTokenService([]byte(cfg.JWTsecret), storage.Token())
 	authService := usecase.NewAuthService(storage.Auth(), storage.Token(), tokenService)
 
-	handler := httpadapter.NewHandler(cfg, logger, authService)
-	secHandler := httpadapter.NewSecuredHandler(tokenService)
+	oauthRepo := google.NewGoogleRepository(cfg)
+	oauthService := usecase.NewOAuthService(oauthRepo)
 
-	server, err := gen.NewServer(handler, secHandler)
+	handler := ht.NewHandler(cfg, logger, authService, oauthService)
+	secHandler := ht.NewSecuredHandler(tokenService)
+
+	server, err := httpgen.NewServer(handler, secHandler)
 	if err != nil {
 		return fmt.Errorf("failed to generate new server: %w", err)
 	}
@@ -73,7 +78,7 @@ func run(ctx context.Context) error {
 		),
 	)
 
-	srvAddr := fmt.Sprintf("%s%s", cfg.Server.Host, cfg.Server.Port)
+	srvAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 
 	srv := http.Server{
 		Addr:    srvAddr,

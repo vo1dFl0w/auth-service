@@ -1,17 +1,24 @@
-env: ""
+env: "local"
 
 server:
   host: "0.0.0.0"
   port: ":8080"
-  request_duration: 5
+  request_duration: 5s
+  logger_time_format: "02-01-2006 15:04:05"
 
 postgres:
   host: "database"
   port: "5432"
   username: "admin"
-  password: ""
+  password:
   dbname: "auth-service-db"
   sslmode: "disable"
+
+google_oauth:
+  client_id:
+  client_secret:
+  redirect_url: "http://localhost:8080/api/v1/auth/google/callback"
+  base_user_info_url: "https://openidconnect.googleapis.com/v1/userinfo"
 
 cors:
   allowed_origins: []
@@ -21,7 +28,8 @@ cors:
   exposed_headers: []
   max_age: 600
 
-jwt_secret: ""
+jwt_secret:
 
 cookie:
   cookie_secure: false
+  cookie_max_age: 300
