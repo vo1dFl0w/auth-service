@@ -16,7 +16,7 @@ func NewOAuthGoogleConfig(cfg *config.Config) *Config {
 			RedirectURL:  cfg.GoogleOAuth.RedirectURL,
 			ClientID:     cfg.GoogleOAuth.ClientID,
 			ClientSecret: cfg.GoogleOAuth.ClientSecret,
-			Scopes:       []string{"openid", "email", "profile"},
+			Scopes:       cfg.GoogleOAuth.Scopes,
 			Endpoint:     google.Endpoint,
 		},
 	}

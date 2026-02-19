@@ -23,6 +23,7 @@ func NewOAuthService(oauthRepo repository.OAuthRepository) *oauthService {
 }
 
 func (s *oauthService) GetAuthCodeURL(ctx context.Context, state string) string {
+
 	return s.oauthRepo.AuthCodeURL(ctx, state)
 }
 
@@ -31,8 +32,11 @@ func (s *oauthService) GetGenerateState(ctx context.Context) (string, error) {
 }
 
 func (s *oauthService) GetUserFromCode(ctx context.Context, code string, state string) (*domain.ProviderUser, error) {
-	if err := s.oauthRepo.ValidateCallbackParams(ctx, code, state); err != nil {
-		return nil, fmt.Errorf("validate callback params: %w", err)
+	if code == "" {
+		return nil, domain.ErrEmptyCallbackCode
+	}
+	if state == "" {
+		return nil, domain.ErrEmptyCallbackState
 	}
 
 	u, err := s.oauthRepo.GetUserFromCode(ctx, code)

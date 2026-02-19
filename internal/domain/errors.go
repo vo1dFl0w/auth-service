@@ -7,6 +7,8 @@ var (
 	ErrEmailNotProvided             = errors.New("email not provided")
 	ErrEmptyPassword                = errors.New("empty password")
 	ErrEmptyRefreshToken            = errors.New("empty refresh token")
+	ErrEmptyCallbackCode            = errors.New("empty callback code")
+	ErrEmptyCallbackState           = errors.New("empty callback state")
 	ErrExpiredAccessToken           = errors.New("expired access token")
 	ErrInvalidPassword              = errors.New("invalid password")
 	ErrInvalidEmail                 = errors.New("invalid email")

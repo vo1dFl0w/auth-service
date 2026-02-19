@@ -81,6 +81,17 @@ func (h *Handler) TimeoutMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func (h *Handler) OAuthStateCookieMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie(string(CtxKeyOAuthState))
+		if err == nil && c != nil {
+			ctx := context.WithValue(r.Context(), CtxKeyOAuthState, c.Value)
+			r = r.WithContext(ctx)
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 type responseWriter struct {
 	http.ResponseWriter
 	code int

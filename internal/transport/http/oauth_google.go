@@ -2,7 +2,9 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/vo1dFl0w/auth-service/internal/transport/http/httpgen"
@@ -19,7 +21,6 @@ func (h *Handler) AuthGoogleLogin(ctx context.Context) (httpgen.AuthGoogleLoginR
 	authURL := h.oauthService.GetAuthCodeURL(ctx, state)
 	cookie := h.formOAuthStateCookie(state)
 
-
 	resp := &httpgen.AuthGoogleLoginFound{
 		SetCookie: httpgen.NewOptString(cookie),
 		Location:  httpgen.NewOptString(authURL),
@@ -29,6 +30,14 @@ func (h *Handler) AuthGoogleLogin(ctx context.Context) (httpgen.AuthGoogleLoginR
 }
 
 func (h *Handler) AuthGoogleCallback(ctx context.Context, params httpgen.AuthGoogleCallbackParams) (httpgen.AuthGoogleCallbackRes, error) {
+	if err := h.compareOAuthState(ctx, params.State); err != nil {
+		errHttp := MapError(err)
+		h.LogHTTPError(ctx, err, errHttp)
+		return errHttp.ToAuthGoogleCallbackErrResp(), nil
+	}
+
+	clearOAuthCookie := h.clearOAuthStateCookie()
+
 	u, err := h.oauthService.GetUserFromCode(ctx, params.Code, params.State)
 	if err != nil {
 		errHttp := MapError(err)
@@ -46,7 +55,7 @@ func (h *Handler) AuthGoogleCallback(ctx context.Context, params httpgen.AuthGoo
 	cookie := h.formCookieString(res.RefreshToken, res.RefreshTokenExpiresAt)
 
 	resp := &httpgen.AccessTokenHeaders{
-		SetCookie: httpgen.NewOptString(cookie),
+		SetCookie: httpgen.NewOptString(cookie + "\n" + clearOAuthCookie),
 		Response: httpgen.AccessToken{
 			AccessToken: res.AccessToken,
 		},
@@ -62,6 +71,51 @@ func (h *Handler) formOAuthStateCookie(state string) string {
 		Path:     "/api/v1/auth/",
 		Expires:  time.Now().Add(time.Second * time.Duration(h.cfg.Cookie.MaxAge)),
 		MaxAge:   h.cfg.Cookie.MaxAge,
+		Secure:   h.cfg.Cookie.CookieSecure,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	return c.String()
+}
+
+func (h *Handler) compareOAuthState(ctx context.Context, state string) error {
+	v := ctx.Value(CtxKeyOAuthState)
+	if v == nil {
+		return fmt.Errorf("empty oauth state value")
+	}
+
+	cookieState, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("type assertion oauth state")
+	}
+
+	cookieStateStr, err := url.QueryUnescape(cookieState)
+	if err != nil {
+		return fmt.Errorf("query unescape cookie state: %w", err)
+	}
+
+	if cookieStateStr == "" {
+		return fmt.Errorf("empty cookie state")
+	}
+
+	if state == "" {
+		return fmt.Errorf("empty param state")
+	}
+
+	if cookieStateStr != state {
+		return fmt.Errorf("cookie state and param state not equal")
+	}
+
+	return nil
+}
+
+func (h *Handler) clearOAuthStateCookie() string {
+	c := &http.Cookie{
+		Name:     string(CtxKeyOAuthState),
+		Value:    "",
+		Path:     "/api/v1/auth/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
 		Secure:   h.cfg.Cookie.CookieSecure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,

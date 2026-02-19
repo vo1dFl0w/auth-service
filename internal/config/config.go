@@ -42,10 +42,11 @@ type CookieConfig struct {
 }
 
 type GoogleOAuthConfig struct {
-	ClientID        string `yaml:"client_id" env:"GOOGLE_OAUTH_CLIENT_ID" env-required:"true"`
-	ClientSecret    string `yaml:"client_secret" env:"GOOGLE_OAUTH_CLIENT_SECRET" env-required:"true"`
-	RedirectURL     string `yaml:"redirect_url" env:"GOOGLE_OAUTH_REDIRECT_URL" env-required:"true"`
-	BaseUserInfoURL string `yaml:"base_user_info_url" env:"GOOGLE_OAUTH_BASE_USER_INFO_URL" env-required:"true"`
+	ClientID        string   `yaml:"client_id" env:"GOOGLE_OAUTH_CLIENT_ID" env-required:"true"`
+	ClientSecret    string   `yaml:"client_secret" env:"GOOGLE_OAUTH_CLIENT_SECRET" env-required:"true"`
+	RedirectURL     string   `yaml:"redirect_url" env:"GOOGLE_OAUTH_REDIRECT_URL" env-required:"true"`
+	BaseUserInfoURL string   `yaml:"base_user_info_url" env:"GOOGLE_OAUTH_BASE_USER_INFO_URL" env-required:"true"`
+	Scopes          []string `yaml:"scopes" env:"GOOGLE_OAUTH_SCOPES" env-required:"true"`
 }
 
 type Config struct {
@@ -68,42 +69,6 @@ func LoadConfig() (*Config, error) {
 	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
 		return nil, fmt.Errorf("read config: %w", err)
 	}
-
-	/*
-		if v := os.Getenv("ENV"); v != "" {
-			cfg.Env = v
-		}
-
-		if v := os.Getenv("JWT_SECRET"); v != "" {
-			cfg.JWTsecret = v
-		}
-
-		if v := os.Getenv("POSTGRES_HOST"); v != "" {
-			cfg.Postgres.Host = v
-		}
-		if v := os.Getenv("POSTGRES_PORT"); v != "" {
-			cfg.Postgres.Port = v
-		}
-		if v := os.Getenv("POSTGRES_USER"); v != "" {
-			cfg.Postgres.Username = v
-		}
-		if v := os.Getenv("POSTGRES_PASSWORD"); v != "" {
-			cfg.Postgres.Password = v
-		}
-		if v := os.Getenv("POSTGRES_DB"); v != "" {
-			cfg.Postgres.DBname = v
-		}
-		if v := os.Getenv("POSTGRES_SSLMODE"); v != "" {
-			cfg.Postgres.Sslmode = v
-		}
-
-		if v := os.Getenv("SERVER_HOST"); v != "" {
-			cfg.Server.Host = v
-		}
-		if v := os.Getenv("SERVER_PORT"); v != "" {
-			cfg.Server.Port = v
-		}
-	*/
 
 	if v := os.Getenv("COOKIE_SECURE"); v != "" {
 		if b, err := strconv.ParseBool(v); err == nil {
@@ -143,20 +108,13 @@ func LoadConfig() (*Config, error) {
 		cfg.Cors.ExposedHeaders = parts
 	}
 
-	/*
-		if v := os.Getenv("CORS_ALLOW_CREDENTIALS"); v != "" {
-			if b, err := strconv.ParseBool(v); err == nil {
-				cfg.Cors.AllowCredentials = b
-			}
+	if v := os.Getenv("GOOGLE_OAUTH_SCOPES"); v != "" {
+		parts := strings.Split(v, ",")
+		for i := range parts {
+			parts[i] = strings.TrimSpace(parts[i])
 		}
-
-		if cfg.JWTsecret == "" {
-			return nil, fmt.Errorf("JWT_SECRET not set")
-		}
-		if cfg.Postgres.Password == "" {
-			return nil, fmt.Errorf("POSTGRES_PASSWORD not set")
-		}
-	*/
+		cfg.GoogleOAuth.Scopes = parts
+	}
 
 	return &cfg, nil
 }
