@@ -32,8 +32,30 @@ func findAuthorization(h http.Header, prefix string) (string, bool) {
 	return "", false
 }
 
+// operationRolesBearerAuth is a private map storing roles per operation.
 var operationRolesBearerAuth = map[string][]string{
 	APIV1AuthMeGetOperation: []string{},
+}
+
+// GetRolesForBearerAuth returns the required roles for the given operation.
+//
+// This is useful for authorization scenarios where you need to know which roles
+// are required for an operation.
+//
+// Example:
+//
+//	requiredRoles := GetRolesForBearerAuth(AddPetOperation)
+//
+// Returns nil if the operation has no role requirements or if the operation is unknown.
+func GetRolesForBearerAuth(operation string) []string {
+	roles, ok := operationRolesBearerAuth[operation]
+	if !ok {
+		return nil
+	}
+	// Return a copy to prevent external modification
+	result := make([]string, len(roles))
+	copy(result, roles)
+	return result
 }
 
 func (s *Server) securityBearerAuth(ctx context.Context, operationName OperationName, req *http.Request) (context.Context, bool, error) {

@@ -16,7 +16,7 @@ func TestCreateUser(t *testing.T) {
 
 	tx, err := TestDB.BeginTx(ctx, nil)
 	assert.NoError(t, err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	email := "user@example.org"
 	passwordHash := "refresh-token-hash"
@@ -45,7 +45,7 @@ func TestGetUserInfo(t *testing.T) {
 
 	tx, err := TestDB.BeginTx(ctx, nil)
 	assert.NoError(t, err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	q := pggen.New(tx)
 
@@ -69,7 +69,7 @@ func TestFindUserByEmail(t *testing.T) {
 
 	tx, err := TestDB.BeginTx(ctx, nil)
 	assert.NoError(t, err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	q := pggen.New(tx)
 

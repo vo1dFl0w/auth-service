@@ -283,7 +283,7 @@ func TestHandlers_APIV1AuthRegisterPost(t *testing.T) {
 				authService.On("Register", mock.Anything, tc.email, tc.password).Return(nil, err).Once()
 				log.On("Warn", mock.Anything, mock.Anything).Once()
 
-				res, err := handler.APIV1AuthRegisterPost(context.Background(), &httpgen.RegisterRequest{
+				res, _ := handler.APIV1AuthRegisterPost(context.Background(), &httpgen.RegisterRequest{
 					Email:    tc.email,
 					Password: tc.password,
 				})

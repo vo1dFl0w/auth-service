@@ -51,11 +51,11 @@ func run(ctx context.Context) error {
 		if err == nil {
 			break
 		}
-		
-		time.Sleep(time.Millisecond*500)
+
+		time.Sleep(time.Millisecond * 500)
 	}
-	defer db.Close()
-	
+	defer func() { _ = db.Close() }()
+
 	if err := db.Ping(); err != nil {
 		return fmt.Errorf("failed to ping db: %w", err)
 	}
