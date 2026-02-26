@@ -26,7 +26,7 @@ lint:
 	golangci-lint run ./...
 
 # ===== test =====
-.PHONY: install-mockery mocks-gen testunit testbench testintegration testall 
+.PHONY: install-mockery mocks-gen testunit testbench testintegration
 install-mockery:
 	go install github.com/vektra/mockery/v3@v3.6.1
 
@@ -49,5 +49,3 @@ testbench:
 testintegration:
 	go test ./internal/test/integration_test
 	go test ./internal/test/integration_test -bench=BenchmarkFindUserByEmail
-
-testall: testunit testbench testintegration

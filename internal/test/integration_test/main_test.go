@@ -13,7 +13,6 @@ import (
 	migrate "github.com/golang-migrate/migrate/v4"
 	migratepq "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -26,7 +25,6 @@ var (
 	postgresPort     = "5432/tcp"
 
 	migrationsSource = "file://../../../migrations"
-	envPath          = "../../../.env"
 )
 
 var (
@@ -35,16 +33,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	if err := godotenv.Load(envPath); err != nil {
-		fmt.Printf("env not found: %s", err)
-		os.Exit(1)
-	}
-
-	if os.Getenv("INTEGRATION") != "1" {
-		fmt.Println("integration tests skipped; set INTEGRATION=1 to run")
-		os.Exit(1)
-	}
-
 	ctx := context.Background()
 
 	req := testcontainers.ContainerRequest{
