@@ -1,0 +1,46 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - develop
+    pull_request:
+        branches:
+            - develop
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout develop
+              uses: actions/checkout@v6
+
+            - name: Set up Golang 1.24.3
+              uses: actions/setup-go@v6
+              with:
+                go-version: 1.24.3
+                cache: true
+
+            - name: Lint
+              uses: golangci/golangci-lint-action@v9
+              
+    test:
+        needs: lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout develop
+              uses: actions/checkout@v6
+
+            - name: Set up Golang 1.24.3
+              uses: actions/setup-go@v6
+              with:
+                go-version: 1.24.3
+                cache: true
+            
+            - name: Unit tests
+              run: make testunit
+
+            - name: Integration tests
+              env:
+                  INTEGRATION: "1"
+              run: make testintegration
