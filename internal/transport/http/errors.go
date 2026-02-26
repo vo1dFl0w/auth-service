@@ -12,6 +12,7 @@ var (
 	ErrAccessDenied                 = errors.New("access denied")
 	ErrBadRequest                   = errors.New("bad request")
 	ErrEmptyRefreshToken            = errors.New("empty refresh token")
+	ErrInvalidOAuthState            = errors.New("invalid oauth state")
 	ErrGatewayTimeout               = errors.New("gateway timeout")
 	ErrInternalError                = errors.New("internal error")
 	ErrInvalidAuthorizationHeader   = errors.New("invalid authorization header")
@@ -149,6 +150,11 @@ func (e *HTTPError) ToAuthGoogleLoginErrResp() httpgen.AuthGoogleLoginRes {
 
 func (e *HTTPError) ToAuthGoogleCallbackErrResp() httpgen.AuthGoogleCallbackRes {
 	switch e.Status {
+	case http.StatusBadRequest:
+		return &httpgen.AuthGoogleCallbackBadRequest{
+			Message: e.Message,
+			Status:  e.Status,
+		}
 	case http.StatusGatewayTimeout:
 		return &httpgen.AuthGoogleCallbackGatewayTimeout{
 			Message: e.Message,
@@ -169,7 +175,7 @@ func MapError(err error) *HTTPError {
 			Message: domain.ErrEmailAlreadyExists.Error(),
 			Status:  http.StatusConflict,
 		}
-	case errors.Is(err, domain.ErrInvalidEmail) || errors.Is(err, domain.ErrInvalidPassword):
+	case errors.Is(err, domain.ErrInvalidEmail) || errors.Is(err, domain.ErrInvalidPassword) || errors.Is(err, ErrInvalidOAuthState):
 		return &HTTPError{
 			Message: err.Error(),
 			Status:  http.StatusBadRequest,

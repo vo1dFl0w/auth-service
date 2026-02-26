@@ -6,9 +6,13 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/vo1dFl0w/auth-service/internal/config"
 	"github.com/vo1dFl0w/auth-service/internal/domain"
 	"github.com/vo1dFl0w/auth-service/internal/repository"
-	"github.com/vo1dFl0w/auth-service/internal/config"
+)
+
+const (
+	googleProvider = "google"
 )
 
 type Google struct {
@@ -39,17 +43,6 @@ func (g *Google) GenerateState(ctx context.Context) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-func (g *Google) ValidateCallbackParams(ctx context.Context, code string, state string) error {
-	if code == "" {
-		return repository.ErrEmptyCallbackCode
-	}
-	if state == "" {
-		return repository.ErrEmptyCallbackState
-	}
-
-	return nil
-}
-
 func (g *Google) GetUserFromCode(ctx context.Context, code string) (*domain.ProviderUser, error) {
 	token, err := g.cfg.Cfg.Exchange(ctx, code)
 	if err != nil {
@@ -71,7 +64,7 @@ func (g *Google) GetUserFromCode(ctx context.Context, code string) (*domain.Prov
 	}
 
 	return &domain.ProviderUser{
-		Provider:     "google",
+		Provider:     googleProvider,
 		ProviderID:   providerID,
 		Email:        ui.Email,
 		Name:         ui.Name,

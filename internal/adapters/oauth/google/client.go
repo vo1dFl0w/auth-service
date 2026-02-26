@@ -36,7 +36,7 @@ func (c *client) FetchUserProfile(ctx context.Context, accessToken string, url s
 	if err != nil {
 		return nil, fmt.Errorf("client do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	ui := &UserInfo{}
 

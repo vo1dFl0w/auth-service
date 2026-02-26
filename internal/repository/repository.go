@@ -27,5 +27,4 @@ type OAuthRepository interface {
 	AuthCodeURL(ctx context.Context, state string) string
 	GenerateState(ctx context.Context) (string, error)
 	GetUserFromCode(ctx context.Context, code string) (*domain.ProviderUser, error)
-	ValidateCallbackParams(ctx context.Context, code string, state string) error
 }

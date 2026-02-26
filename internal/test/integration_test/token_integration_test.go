@@ -16,7 +16,7 @@ func TestFindRefreshToken(t *testing.T) {
 
 	tx, err := TestDB.BeginTx(ctx, nil)
 	assert.NoError(t, err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	q := pggen.New(tx)
 
@@ -46,7 +46,7 @@ func TestSaveHashedRefreshToken(t *testing.T) {
 
 	tx, err := TestDB.BeginTx(ctx, nil)
 	assert.NoError(t, err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	q := pggen.New(tx)
 
@@ -71,7 +71,7 @@ func TestDeleteRefreshToken(t *testing.T) {
 
 	tx, err := TestDB.BeginTx(ctx, nil)
 	assert.NoError(t, err)
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	q := pggen.New(tx)
 

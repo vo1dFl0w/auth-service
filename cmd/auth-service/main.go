@@ -45,11 +45,16 @@ func run(ctx context.Context) error {
 		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.Username, cfg.Postgres.Password, cfg.Postgres.DBname, cfg.Postgres.Sslmode,
 	)
 
-	db, err := sql.Open("postgres", databaseDSN)
-	if err != nil {
-		return fmt.Errorf("failed to open db: %w", err)
+	var db *sql.DB
+	for i := 0; i < 5; i++ {
+		db, err = sql.Open("postgres", databaseDSN)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(time.Millisecond * 500)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if err := db.Ping(); err != nil {
 		return fmt.Errorf("failed to ping db: %w", err)
@@ -73,7 +78,8 @@ func run(ctx context.Context) error {
 	middlewares := handler.CorsMiddleware(
 		handler.RequestIDMiddleware(
 			handler.LoggerMiddleware(
-				handler.TimeoutMiddleware(server),
+				handler.TimeoutMiddleware(
+					handler.OAuthStateCookieMiddleware(server)),
 			),
 		),
 	)

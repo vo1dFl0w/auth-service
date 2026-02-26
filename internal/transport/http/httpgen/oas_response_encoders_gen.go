@@ -17,6 +17,7 @@ func encodeAPIV1AuthLoginPostResponse(response APIV1AuthLoginPostRes, w http.Res
 	switch response := response.(type) {
 	case *AccessTokenHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Access-Control-Expose-Headers", "Set-Cookie")
 		// Encoding response headers.
 		{
 			h := uri.NewHeaderEncoder(w.Header())
@@ -120,6 +121,7 @@ func encodeAPIV1AuthLoginPostResponse(response APIV1AuthLoginPostRes, w http.Res
 func encodeAPIV1AuthLogoutPostResponse(response APIV1AuthLogoutPostRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *APIV1AuthLogoutPostNoContent:
+		w.Header().Set("Access-Control-Expose-Headers", "Set-Cookie")
 		// Encoding response headers.
 		{
 			h := uri.NewHeaderEncoder(w.Header())
@@ -264,6 +266,7 @@ func encodeAPIV1AuthRefreshPostResponse(response APIV1AuthRefreshPostRes, w http
 	switch response := response.(type) {
 	case *AccessTokenHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Access-Control-Expose-Headers", "Set-Cookie")
 		// Encoding response headers.
 		{
 			h := uri.NewHeaderEncoder(w.Header())
@@ -440,6 +443,7 @@ func encodeAuthGoogleCallbackResponse(response AuthGoogleCallbackRes, w http.Res
 	switch response := response.(type) {
 	case *AccessTokenHeaders:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.Header().Set("Access-Control-Expose-Headers", "Set-Cookie")
 		// Encoding response headers.
 		{
 			h := uri.NewHeaderEncoder(w.Header())
@@ -530,6 +534,7 @@ func encodeAuthGoogleCallbackResponse(response AuthGoogleCallbackRes, w http.Res
 func encodeAuthGoogleLoginResponse(response AuthGoogleLoginRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *AuthGoogleLoginFound:
+		w.Header().Set("Access-Control-Expose-Headers", "Location,Set-Cookie")
 		// Encoding response headers.
 		{
 			h := uri.NewHeaderEncoder(w.Header())

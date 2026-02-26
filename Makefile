@@ -1,24 +1,41 @@
-.PHONY: genall ogen sqlc install-tools testunit testbench testintegration testall 
+# ===== ogen =====
+.PHONY: install-ogen ogen-gen
 
-ogen:
+install-ogen:
+	go install -v github.com/ogen-go/ogen/cmd/ogen@latest
+
+ogen-gen:
 	ogen --target ./internal/transport/http/httpgen --package httpgen --clean ./api/v1/openapi.yaml
 
-sqlc:
+# ===== sqlc =====
+.PHONY: install-sqlc sqlc-gen
+
+install-sqlc:
+	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+
+sqlc-gen:
 	sqlc generate
 
-mocks:
-	mockery --log-level=debug
+# ===== lint =====
+.PHONY: install-lint
+install-lint:
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.10.1
 
-genall: ogen sqlc mocks
+.PHONY: lint
+lint:
+	golangci-lint run ./...
 
-install-tools:
-	go install -v github.com/ogen-go/ogen/cmd/ogen@latest
-	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+# ===== test =====
+.PHONY: install-mockery mocks-gen testunit testbench testintegration
+install-mockery:
 	go install github.com/vektra/mockery/v3@v3.6.1
 
+mocks-gen:
+	mockery --log-level=debug
+
 testunit:
-	go test ./internal/transport/http
-	go test ./internal/usecase
+	go test -race ./internal/transport/http
+	go test -race ./internal/usecase
 
 testbench:
 	go test ./internal/usecase -bench=BenchmarkBcryptCost4
@@ -32,5 +49,3 @@ testbench:
 testintegration:
 	go test ./internal/test/integration_test
 	go test ./internal/test/integration_test -bench=BenchmarkFindUserByEmail
-
-testall: testunit testbench testintegration
